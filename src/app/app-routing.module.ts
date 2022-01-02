@@ -6,7 +6,8 @@ import { ClientAuthorizationComponent } from './components/client-authorization/
 const routes: Routes = [
   /* default */
   { path: '', redirectTo: '/nouvelvie', pathMatch: 'full' },
-  {path: 'nouvelvie', component: ClientAuthorizationComponent},
+  { path: 'nouvelvie', component: ClientAuthorizationComponent},
+  { path: 'oauth/callback', component: ClientAuthorizationComponent },
 
 ];
 
