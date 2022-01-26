@@ -1,15 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import {HttpClient, HttpHeaders, HttpParams} from "@angular/common/http";
 import { RestservicePointService } from 'src/app/services/restservice-point.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import * as CryptoJS from 'crypto-js';
+import { CommunicationService } from 'src/app/services/helper/communication.service';
 
 @Component({
   selector: 'app-client-authorization',
   templateUrl: './client-authorization.component.html',
-  styleUrls: ['./client-authorization.component.css']
+  styleUrls: ['./client-authorization.component.css'],
+  providers: [CommunicationService]
 })
-export class ClientAuthorizationComponent implements OnInit {
+export class WithingClientAuthorizationComponent implements OnInit {
 
   public isLoggedIn = false;
   oauthResponse: any;
@@ -21,19 +23,22 @@ export class ClientAuthorizationComponent implements OnInit {
   client_id : string = 'f37e5ad6fc648d5e1d8d338bad8fba3c9c73d7e766ed8207c95f6e7b484fd3d8';
   client_secret: string = '51a4b862ffdf96bb4b2390d673e9f85e695d723e8b6d641f22c702ed8f5854cf';
   nonceSignature: string;
+  JSONData: string;
 
   constructor(
     private userService: RestservicePointService,
     private activatedRoute: ActivatedRoute,
+    private router: Router,
+    private comService: CommunicationService,
     private http: HttpClient) { }
 
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe(params => {
       if (params.code) {
         this.code = params.code;
+        localStorage.setItem("code", this.code);
         console.log("ngOnInit: " + "Authorized code: " + this.code);
         this.getNonceForAccessToken();
-        //this.getAccessToken(params.code);
       }
     });
   }
@@ -43,13 +48,12 @@ export class ClientAuthorizationComponent implements OnInit {
     returns a code
     use this code to get nonce
   */
-  login() {
+  getData() {
     const params = [
       'response_type=code',
       'state=5ca75bd30',
       'client_id=f37e5ad6fc648d5e1d8d338bad8fba3c9c73d7e766ed8207c95f6e7b484fd3d8',
       'scope=user.info,user.metrics,user.activity',
-      //'mode=demo', // test user
       //'redirect_uri=https://nouvelvie.com/oauth/callback',
       'redirect_uri=http://localhost:4200/oauth/callback',
     ];
@@ -119,9 +123,10 @@ export class ClientAuthorizationComponent implements OnInit {
          
           console.log("Response Token: " + JSON.stringify(token));
           //this.getActivity(token.body.access_token); // this is working
-          this.getUserByemail(token.body.access_token);
+          localStorage.setItem("access_token", token.body.access_token);
+          //this.getUserByemail(token.body.access_token);
           //this.linkDevice(token.body.access_token);
-          this.getDevice(token.body.access_token); // this is working
+          //this.getDevice(token.body.access_token); // this is working
       });
   }
 
@@ -187,23 +192,26 @@ export class ClientAuthorizationComponent implements OnInit {
     Get the user activity
     use token
   */
-  getActivity(token: any) {
+  /*getActivity(token: any) {
     const payload = new HttpParams()
     .append('action', 'getactivity')
     .append('startdateymd', '2022-01-01')
-    .append('enddateymd', '2022-01-02')
+    .append('enddateymd', '2022-01-20')
     .append('access_token', token)
 
     this.http.post('https://wbsapi.withings.net/v2/measure', payload, {
       headers: {
-        //'Authorization': token
+        //'Authorization': token 
       }
     })
     .subscribe(response => {
       let res = response;
+      this.JSONData = JSON.stringify(res);
+      this.comService.displayWithingJSON(JSON.stringify(res));
+      //this.router.navigate(['/withingdisplay']);
       console.log("User Activity: " + JSON.stringify(res));
     });
-  }
+  }*/
 
   /*
   get user information by email
@@ -253,7 +261,7 @@ export class ClientAuthorizationComponent implements OnInit {
   /*
     Get Device API
   */
-  getDevice(token: any) {
+  /*getDevice(token: any) {
 
     const payload = new HttpParams()
     .append('action', 'getdevice')
@@ -269,7 +277,7 @@ export class ClientAuthorizationComponent implements OnInit {
       console.log("List device: " + JSON.stringify(res));
     });
 
-  }
+  }*/
 
 
 
